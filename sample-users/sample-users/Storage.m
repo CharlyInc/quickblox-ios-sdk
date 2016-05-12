@@ -16,6 +16,7 @@
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
+		NSLog(@"%s", __PRETTY_FUNCTION__);
         instance = [[self class] new];
     });
     
@@ -24,6 +25,7 @@
 
 - (instancetype)init
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     self = [super init];
     if (self) {
         self.users = [NSMutableArray array];

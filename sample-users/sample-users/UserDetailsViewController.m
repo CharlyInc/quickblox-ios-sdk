@@ -25,6 +25,7 @@
 
 - (void)viewDidLoad
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [super viewDidLoad];
     
     self.title = self.user.fullName != nil ? self.user.fullName : self.user.login;
@@ -36,8 +37,10 @@
     self.tagsTextField.text = [self.user.tags componentsJoinedByString:@","];
 }
 
-- (void)setupUIForShowUser {
-    
+- (void)setupUIForShowUser
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
+
     self.navigationItem.rightBarButtonItem = nil;
     self.navigationItem.leftBarButtonItem = nil;
     
@@ -52,8 +55,10 @@
 
 - (IBAction)save:(id)sender
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [SVProgressHUD showWithStatus:@"Updating user"];
     
+	NSLog(@"QBUpdateUserParameters");
     QBUpdateUserParameters *updateParameters = [QBUpdateUserParameters new];
     
     if (self.loginTextField.text.length > 0) updateParameters.login = self.loginTextField.text;
@@ -68,11 +73,14 @@
     
     __weak typeof(self) weakSelf = self;
     
+	NSLog(@"QBRequest updateCurrentUser:");
     [QBRequest updateCurrentUser:updateParameters successBlock:^(QBResponse *response, QBUUser *user) {
+		NSLog(@"%s", __PRETTY_FUNCTION__);
         [SVProgressHUD dismiss];
         [weakSelf dismissViewControllerAnimated:YES completion:nil];
         
     } errorBlock:^(QBResponse *response) {
+		NSLog(@"%s", __PRETTY_FUNCTION__);
         [SVProgressHUD dismiss];
         
         NSLog(@"Errors=%@", [response.error description]);
@@ -86,7 +94,9 @@
     }];
 }
 
-- (IBAction)cancelButtonClicked:(id)sender {
+- (IBAction)cancelButtonClicked:(id)sender
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

@@ -13,12 +13,15 @@
 
 - (void)fetchResultsWithPage:(NSInteger)page pageSize:(NSInteger)pageSize
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     // Load files
     //
     __weak __typeof(self)weakSelf = self;
     
+	NSLog(@"QBGeneralResponsePage");
     QBGeneralResponsePage *responsePage = [QBGeneralResponsePage responsePageWithCurrentPage:page perPage:pageSize];
     
+	NSLog(@"QBRequest usersForPage:");
     [QBRequest usersForPage:responsePage successBlock:^(QBResponse *response, QBGeneralResponsePage *page, NSArray *users) {
         [weakSelf receivedResults:users total:page.totalEntries];
     } errorBlock:^(QBResponse *response) {

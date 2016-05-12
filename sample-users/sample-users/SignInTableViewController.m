@@ -55,6 +55,7 @@
         [SVProgressHUD showWithStatus:@"Signing in"];
 
         __weak typeof(self)weakSelf = self;
+		NSLog(@"QBRequest logInWithUserLogin:");
         [QBRequest logInWithUserLogin:login password:password successBlock:^(QBResponse *response, QBUUser *user) {
             [SVProgressHUD dismiss];
             

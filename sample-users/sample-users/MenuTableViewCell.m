@@ -12,6 +12,7 @@
 
 - (void)setItemInactive:(BOOL)itemInactive
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     _itemInactive = itemInactive;
     
     if (itemInactive) {

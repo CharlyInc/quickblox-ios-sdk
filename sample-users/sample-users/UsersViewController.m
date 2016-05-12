@@ -25,19 +25,18 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 };
 
 @interface UsersViewController () <UITableViewDelegate, UITableViewDataSource, NMPaginatorDelegate>
-
-@property (nonatomic, strong) UsersPaginator *paginator;
+@property (nonatomic) UsersPaginator *paginator;
+@property (nonatomic) BOOL isActionsOpened;
 @property (nonatomic, weak) UILabel *footerLabel;
 @property (nonatomic, weak) UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, weak) IBOutlet UILabel *titleLabel;
-
-@property (nonatomic, assign) BOOL isActionsOpened;
-
 @end
 
 @implementation UsersViewController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [super viewDidLoad];
     self.title = @"Users";
     
@@ -46,6 +45,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)viewWillAppear:(BOOL)animated
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [super viewWillAppear:animated];
     
     [self updateMenuSection:NO];
@@ -54,12 +54,14 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)viewDidAppear:(BOOL)animated
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [super viewDidAppear:animated];
     
     __weak typeof(self)weakSelf = self;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
+		NSLog(@"%s", __PRETTY_FUNCTION__);
+
         [weakSelf setupTableViewFooter];
         
         [SVProgressHUD showWithStatus:@"Get users"];
@@ -70,12 +72,17 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
     });
 }
 
-- (BOOL)isSignedIn {
+- (BOOL)isSignedIn
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
+	NSLog(@"QBSession currentUser (QBUser)");
     return [[QBSession currentSession] currentUser] != nil;
 }
 
-- (IBAction)actionsButtonClicked:(id)sender {
-    
+- (IBAction)actionsButtonClicked:(id)sender
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
+
     self.isActionsOpened = !self.isActionsOpened;
     [self updateMenuSection:YES];
     [self updateTitle];
@@ -83,6 +90,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)updateMenuSection:(BOOL)animated
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     UITableViewRowAnimation animation = self.isActionsOpened ? UITableViewRowAnimationBottom : UITableViewRowAnimationTop;
     
     animation = animated ? animation : UITableViewRowAnimationNone;
@@ -92,38 +100,45 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)updateTitle
 {
+	NSLog(@"QBSession currentUser (QBUser)");
     self.titleLabel.text = [self isSignedIn] ? [[QBSession currentSession] currentUser].login : @"Not Signed In";
 }
 
-- (void)signOutAction {
-    
+- (void)signOutAction
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
+
     [SVProgressHUD showWithStatus:@"Logout user"];
     
     __weak typeof(self)weakSelf = self;
     
+	NSLog(@"QBRequest");
     [QBRequest logOutWithSuccessBlock:^(QBResponse *response) {
+		NSLog(@"%s", __PRETTY_FUNCTION__);
         [SVProgressHUD  dismiss];
         [weakSelf updateMenuSection:YES];
         [weakSelf updateTitle];
         
     } errorBlock:^(QBResponse *response) {
+		NSLog(@"%s", __PRETTY_FUNCTION__);
         [SVProgressHUD dismiss];
         NSLog(@"Response error %@:", response.error);
     }];
 }
 
 
-#pragma mark
-#pragma mark Paginator
+#pragma mark - Paginator
 
 - (void)fetchNextPage
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [self.paginator fetchNextPage];
     [self.activityIndicator startAnimating];
 }
 
 - (void)setupTableViewFooter
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     // set up label
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
     footerView.backgroundColor = [UIColor clearColor];
@@ -148,6 +163,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)updateTableViewFooter
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     if ([self.paginator.results count] != 0) {
         self.footerLabel.text = [NSString stringWithFormat:@"%lu results out of %ld",
                                  (unsigned long)[self.paginator.results count], (long)self.paginator.total];
@@ -159,13 +175,14 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 }
 
 
-#pragma mark
-#pragma mark Storyboard
+#pragma mark - Storyboard
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(UITableViewCell *)sender
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     if ([segue.identifier isEqualToString:@"editUserSegue"]) {
         
+		NSLog(@"QBSession / QBUUser");
         QBUUser *user = [[QBSession currentSession] currentUser];
         
         UserDetailsViewController *destinationViewController = (UserDetailsViewController *)[(UINavigationController *)segue.destinationViewController topViewController];
@@ -183,11 +200,12 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
     }
 }
 
-#pragma mark
-#pragma mark UIScrollViewDelegate
+#pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+	NSLog(@"%s", __PRETTY_FUNCTION__);
+
     // when reaching bottom, load a new page
     if (scrollView.contentOffset.y == scrollView.contentSize.height - scrollView.bounds.size.height){
         // ask next page only if we haven't reached last page
@@ -199,11 +217,11 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 }
 
 
-#pragma mark
-#pragma mark UITableViewDelegate & UITableViewDataSource
+#pragma mark - UITableViewDelegate & UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     NSInteger numberOfRowsInSection = 0;
     
     if (section == 0) {
@@ -222,6 +240,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     UITableViewCell *cell = nil;
     
     if (indexPath.section == 0) {
@@ -280,6 +299,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     CGFloat heightForRowAtIndexPath = 0;
     
     if (indexPath.section == 0) {
@@ -293,6 +313,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     UITableViewHeaderFooterView *headerView = nil;
     
     if (section == 0) {
@@ -322,6 +343,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     CGFloat heightForHeader = 0;
     
     if (section == 0) {
@@ -335,6 +357,7 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     if (indexPath.section == 0) {
@@ -380,11 +403,11 @@ NS_ENUM(NSInteger, UsersViewControllerMenuMap) {
 }
 
 
-#pragma mark
-#pragma mark NMPaginatorDelegate
+#pragma mark - NMPaginatorDelegate
 
 - (void)paginator:(id)paginator didReceiveResults:(NSArray *)results
 {
+	NSLog(@"%s", __PRETTY_FUNCTION__);
     // save files
     //
     [[Storage instance].users addObjectsFromArray:results];
