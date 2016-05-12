@@ -26,7 +26,7 @@
     [super viewDidLoad];
     
     self.tableView.tableFooterView = [UIView new];
-    NSParameterAssert(self.dialog);
+    NSParameterAssert(self.channel);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -66,9 +66,9 @@
     
     __weak __typeof(self)weakSelf = self;
     
-    if (self.dialog.type == QBChatDialogTypePrivate) {
+    if (self.channel.type == QBChatDialogTypePrivate) {
         // Retrieving users with identifiers.
-        [[[ServicesManager instance].usersService getUsersWithIDs:self.dialog.occupantIDs] continueWithBlock:^id(BFTask *task) {
+        [[[ServicesManager instance].usersService getUsersWithIDs:self.channel.occupantIDs] continueWithBlock:^id(BFTask *task) {
             //
             __typeof(self) strongSelf = weakSelf;
             [users addObjectsFromArray:task.result];
@@ -85,8 +85,8 @@
 #pragma mark QMChatServiceDelegate delegate
 
 - (void)chatService:(QMChatService *)chatService didUpdateChatDialogInMemoryStorage:(QBChatDialog *)chatDialog {
-    if ([chatDialog.ID isEqualToString:self.dialog.ID]) {
-        self.dialog = chatDialog;
+    if ([chatDialog.ID isEqualToString:self.channel.ID]) {
+        self.channel = chatDialog;
         [self reloadDataSource];
     }
 }
@@ -95,7 +95,7 @@
 
 - (void)reloadDataSource {
     self.dataSource = [[UsersDataSource alloc] init];
-    [self.dataSource setExcludeUsersIDs:self.dialog.occupantIDs];
+    [self.dataSource setExcludeUsersIDs:self.channel.occupantIDs];
     self.tableView.dataSource = self.dataSource;
     [self.tableView reloadData];
     [self updateSaveButtonState];
@@ -132,7 +132,7 @@
     [[[ServicesManager instance].usersService getUsersWithIDs:usersIDs] continueWithBlock:^id(BFTask *task) {
         //
         // Updating dialog with occupants.
-        [ServicesManager.instance.chatService joinOccupantsWithIDs:usersIDs toChatDialog:self.dialog completion:^(QBResponse *response, QBChatDialog *updatedDialog) {
+        [ServicesManager.instance.chatService joinOccupantsWithIDs:usersIDs toChatDialog:self.channel completion:^(QBResponse *response, QBChatDialog *updatedDialog) {
             if( response.success ) {
                 
                 // Notifying users about newly created dialog.
@@ -185,7 +185,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:kGoToChatSegueIdentifier]) {
         ChatViewController *vc = (ChatViewController *) segue.destinationViewController;
-        vc.dialog = sender;
+        vc.channel = sender;
     }
 }
 
@@ -200,7 +200,7 @@
         if ([vc isKindOfClass:[DialogsViewController class]]) {
             
             ChatViewController * chatVC = [self.storyboard instantiateViewControllerWithIdentifier:@"ChatViewController"];
-            chatVC.dialog = dialog;
+            chatVC.channel = dialog;
             
             [newStack addObject:chatVC];
             [self.navigationController setViewControllers:newStack animated:true];

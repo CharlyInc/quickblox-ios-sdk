@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Igor Khomenko. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 #import "NotificationService.h"
 
 /**
@@ -32,7 +32,8 @@
 /**
  *  Download users accordingly to self.currentEnvironment
  */
-- (void)downloadCurrentEnvironmentUsersWithSuccessBlock:(void(^)(NSArray QB_GENERIC(QBUUser *) *latestUsers))successBlock errorBlock:(void(^)(NSError *error))errorBlock;
+- (void)downloadCurrentEnvironmentUsersWithSuccessBlock:(void(^)(NSArray QB_GENERIC(QBUUser *) *latestUsers))successBlock
+											 errorBlock:(void(^)(NSError *error))errorBlock;
 
 /**
  *  Sorted array of users.

@@ -43,7 +43,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:kGoToChatSegueIdentifier]) {
         ChatViewController* viewController = segue.destinationViewController;
-        viewController.dialog = sender;
+        viewController.channel = sender;
     }
 }
 

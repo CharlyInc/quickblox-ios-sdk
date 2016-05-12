@@ -119,7 +119,7 @@ static NSString *const kTestUsersDefaultPassword = @"x6Bt0VDy5";
 - (void)notificationServiceDidSucceedFetchingDialog:(QBChatDialog *)chatDialog {
     DialogsViewController *dialogsController = (DialogsViewController *)[self.storyboard instantiateViewControllerWithIdentifier:@"DialogsViewController"];
     ChatViewController *chatController = (ChatViewController *)[self.storyboard instantiateViewControllerWithIdentifier:@"ChatViewController"];
-    chatController.dialog = chatDialog;
+    chatController.channel = chatDialog;
     
     self.navigationController.viewControllers = @[dialogsController, chatController];
 }

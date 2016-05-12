@@ -33,8 +33,8 @@ NSString *const kAccountKey     = @"7yvNe17TnjNUqDoPwfqp";
     [QBSettings setCarbonsEnabled:YES];
     
     // Enables Quickblox REST API calls debug console output
-    [QBSettings setLogLevel:QBLogLevelNothing];
-    
+//    [QBSettings setLogLevel:QBLogLevelNothing];
+
     // Enables detailed XMPP logging in console output
     [QBSettings enableXMPPLogging];
     
@@ -85,23 +85,13 @@ NSString *const kAccountKey     = @"7yvNe17TnjNUqDoPwfqp";
 	
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-}
-
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    
     // Logout from chat
     //
 	[ServicesManager.instance.chatService disconnectWithCompletionBlock:nil];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-	
     // Login to QuickBlox Chat
     //
 	[ServicesManager.instance.chatService connectWithCompletionBlock:nil];
@@ -117,11 +107,13 @@ NSString *const kAccountKey     = @"7yvNe17TnjNUqDoPwfqp";
 
 #pragma mark - NotificationServiceDelegate protocol
 
-- (void)notificationServiceDidSucceedFetchingDialog:(QBChatDialog *)chatDialog {
+- (void)notificationServiceDidSucceedFetchingDialog:(QBChatDialog *)chatDialog
+{
     UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
-    
-    ChatViewController *chatController = (ChatViewController *)[[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"ChatViewController"];
-    chatController.dialog = chatDialog;
+
+	UIStoryboard *sb = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ChatViewController *chatController = (ChatViewController *)[sb instantiateViewControllerWithIdentifier:@"ChatViewController"];
+    chatController.channel = chatDialog;
     
     NSString *dialogWithIDWasEntered = [ServicesManager instance].currentDialogID;
     if (dialogWithIDWasEntered != nil) {

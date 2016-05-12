@@ -14,43 +14,40 @@
 #import "ChatViewController.h"
 #import "DialogTableViewCell.h"
 
-@interface DialogsViewController ()
-<
-QMChatServiceDelegate,
-QMAuthServiceDelegate,
-QMChatConnectionDelegate
->
-
+@interface DialogsViewController () <QMChatServiceDelegate, QMAuthServiceDelegate, QMChatConnectionDelegate>
 @property (nonatomic, strong) id <NSObject> observerDidBecomeActive;
-@property (nonatomic, readonly) NSArray *dialogs;
-
+@property (nonatomic, readonly) NSArray *channelList;
 @end
 
 @implementation DialogsViewController
 
-- (void)awakeFromNib {
+- (void)awakeFromNib
+{
     [super awakeFromNib];
     
     // calling awakeFromNib due to viewDidLoad not being called by instantiateViewControllerWithIdentifier
     [[ServicesManager instance].chatService addDelegate:self];
-    self.observerDidBecomeActive = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
-                                                                                     object:nil queue:[NSOperationQueue mainQueue]
-                                                                                 usingBlock:^(NSNotification *note) {
-                                                                                     if (![[QBChat instance] isConnected]) {
-                                                                                         [SVProgressHUD showWithStatus:NSLocalizedString(@"SA_STR_CONNECTING_TO_CHAT", nil) maskType:SVProgressHUDMaskTypeClear];
-                                                                                     }
-                                                                                 }];
-    
+	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+	self.observerDidBecomeActive = [nc addObserverForName:UIApplicationDidBecomeActiveNotification
+												   object:nil
+													queue:[NSOperationQueue mainQueue]
+											   usingBlock:^(NSNotification *note) {
+												   if (![[QBChat instance] isConnected]) {
+													   [SVProgressHUD showWithStatus:NSLocalizedString(@"SA_STR_CONNECTING_TO_CHAT", nil)
+																			maskType:SVProgressHUDMaskTypeClear];
+												   }
+											   }];
+
     if ([ServicesManager instance].isAuthorized) {
-        [self loadDialogs];
+        [self loadChannelList];
     }
      self.navigationItem.title = [ServicesManager instance].currentUser.login;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
-    
-   
+
+
 	[self.tableView reloadData];
 }
 
@@ -83,39 +80,46 @@ QMChatConnectionDelegate
     });
 }
 
-- (void)loadDialogs {
+- (void)loadChannelList
+{
     __weak __typeof(self) weakSelf = self;
 	
+	QMChatService *cs = [ServicesManager instance].chatService;
     if ([ServicesManager instance].lastActivityDate != nil) {
-        [[ServicesManager instance].chatService fetchDialogsUpdatedFromDate:[ServicesManager instance].lastActivityDate andPageLimit:kDialogsPageLimit iterationBlock:^(QBResponse *response, NSArray *dialogObjects, NSSet *dialogsUsersIDs, BOOL *stop) {
-            //
-            [weakSelf.tableView reloadData];
-        } completionBlock:^(QBResponse *response) {
-            //
-            if ([ServicesManager instance].isAuthorized && response.success) {
-                [ServicesManager instance].lastActivityDate = [NSDate date];
-            }
-        }];
-    }
-    else {
+		[cs fetchDialogsUpdatedFromDate:[ServicesManager instance].lastActivityDate
+						   andPageLimit:kDialogsPageLimit
+						 iterationBlock:^(QBResponse *response, NSArray *channels, NSSet *channelsUsersIDs, BOOL *stop) {
+							 //
+							 [weakSelf.tableView reloadData];
+						 } completionBlock:^(QBResponse *response) {
+							 //
+							 if ([ServicesManager instance].isAuthorized && response.success) {
+								 [ServicesManager instance].lastActivityDate = [NSDate date];
+							 }
+						 }];
+
+	} else {
         [SVProgressHUD showWithStatus:NSLocalizedString(@"SA_STR_LOADING_DIALOGS", nil) maskType:SVProgressHUDMaskTypeClear];
-        [[ServicesManager instance].chatService allDialogsWithPageLimit:kDialogsPageLimit extendedRequest:nil iterationBlock:^(QBResponse *response, NSArray *dialogObjects, NSSet *dialogsUsersIDs, BOOL *stop) {
-            [weakSelf.tableView reloadData];
-        } completion:^(QBResponse *response) {
-            if ([ServicesManager instance].isAuthorized) {
-                if (response.success) {
-                    [SVProgressHUD showSuccessWithStatus:NSLocalizedString(@"SA_STR_COMPLETED", nil)];
-                    [ServicesManager instance].lastActivityDate = [NSDate date];
-                }
-                else {
-                    [SVProgressHUD showErrorWithStatus:NSLocalizedString(@"SA_STR_FAILED_LOAD_DIALOGS", nil)];
-                }
-            }
-        }];
+		[cs allDialogsWithPageLimit:kDialogsPageLimit
+					extendedRequest:nil
+					 iterationBlock:^(QBResponse *response, NSArray *dialogObjects, NSSet *dialogsUsersIDs, BOOL *stop) {
+						 [weakSelf.tableView reloadData];
+					 } completion:^(QBResponse *response) {
+						 if ([ServicesManager instance].isAuthorized) {
+							 if (response.success) {
+								 [SVProgressHUD showSuccessWithStatus:NSLocalizedString(@"SA_STR_COMPLETED", nil)];
+								 [ServicesManager instance].lastActivityDate = [NSDate date];
+
+							 } else {
+								 [SVProgressHUD showErrorWithStatus:NSLocalizedString(@"SA_STR_FAILED_LOAD_DIALOGS", nil)];
+							 }
+						 }
+					 }];
     }
 }
 
-- (NSArray *)dialogs {
+- (NSArray *)channelList
+{
     // Retrieving dialogs sorted by updatedAt date from memory storage.
 	return [ServicesManager.instance.chatService.dialogsMemoryStorage dialogsSortByUpdatedAtWithAscending:NO];
 }
@@ -123,20 +127,26 @@ QMChatConnectionDelegate
 #pragma mark
 #pragma mark UITableViewDelegate & UITableViewDataSource
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return self.dialogs.count;
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+	return self.channelList.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView
+		 cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     DialogTableViewCell *cell = (DialogTableViewCell *) [tableView dequeueReusableCellWithIdentifier:@"ChatRoomCellIdentifier"];
-    
-    QBChatDialog *chatDialog = self.dialogs[indexPath.row];
+    QBChatDialog *chatDialog = self.channelList[indexPath.row];
     
     switch (chatDialog.type) {
         case QBChatDialogTypePrivate: {
             cell.lastMessageTextLabel.text = chatDialog.lastMessageText;
 			QBUUser *recipient = [[ServicesManager instance].usersService.usersMemoryStorage userWithID:chatDialog.recipientID];
-            cell.dialogNameLabel.text = recipient.login == nil ? (recipient.fullName == nil ? [NSString stringWithFormat:@"%lu", (unsigned long)recipient.ID] : recipient.fullName) : recipient.login;
+            cell.dialogNameLabel.text = recipient.login == nil
+										? (recipient.fullName == nil
+										   ? [NSString stringWithFormat:@"%lu", (unsigned long)recipient.ID]
+										   : recipient.fullName)
+										: recipient.login;
             cell.dialogImageView.image = [UIImage imageNamed:@"chatRoomIcon"];
         }
             break;
@@ -190,22 +200,23 @@ QMChatConnectionDelegate
                                                     }];
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 	
-	QBChatDialog *dialog = self.dialogs[indexPath.row];
-
-    [self performSegueWithIdentifier:kGoToChatSegueIdentifier sender:dialog];
+	QBChatDialog *channel = self.channelList[indexPath.row];
+    [self performSegueWithIdentifier:kGoToChatSegueIdentifier sender:channel];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 64.0f;
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)senderChannel
+{
     if ([segue.identifier isEqualToString:kGoToChatSegueIdentifier]) {
         ChatViewController *chatViewController = segue.destinationViewController;
-        chatViewController.dialog = sender;
+        chatViewController.channel = senderChannel;
     }
 }
 
@@ -214,7 +225,7 @@ QMChatConnectionDelegate
 		return;
 	}
 	
-	QBChatDialog *chatDialog = self.dialogs[indexPath.row];
+	QBChatDialog *chatDialog = self.channelList[indexPath.row];
 	
 	// remove current user from occupants
 	NSMutableArray *occupantsWithoutCurrentUser = [NSMutableArray array];
@@ -285,12 +296,12 @@ QMChatConnectionDelegate
 
 - (void)chatServiceChatDidConnect:(QMChatService *)chatService {
     [SVProgressHUD showSuccessWithStatus:NSLocalizedString(@"SA_STR_CONNECTED", nil) maskType:SVProgressHUDMaskTypeClear];
-    [self loadDialogs];
+    [self loadChannelList];
 }
 
 - (void)chatServiceChatDidReconnect:(QMChatService *)chatService {
     [SVProgressHUD showSuccessWithStatus:NSLocalizedString(@"SA_STR_RECONNECTED", nil) maskType:SVProgressHUDMaskTypeClear];
-    [self loadDialogs];
+    [self loadChannelList];
 }
 
 - (void)chatServiceChatDidAccidentallyDisconnect:(QMChatService *)chatService {

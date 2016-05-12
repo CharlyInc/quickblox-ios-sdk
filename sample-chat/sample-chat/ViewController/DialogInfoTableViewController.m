@@ -42,18 +42,18 @@
 
 - (void)chatService:(QMChatService *)chatService didUpdateChatDialogInMemoryStorage:(QBChatDialog *)chatDialog {
     
-    if([self.dialog.ID isEqualToString:chatDialog.ID]) {
-        self.dialog = chatDialog;
+    if([self.channel.ID isEqualToString:chatDialog.ID]) {
+        self.channel = chatDialog;
         [self refreshDataSource];
     }
 }
 
 - (void)chatService:(QMChatService *)chatService didUpdateChatDialogsInMemoryStorage:(NSArray *)dialogs {
     
-    if ([dialogs containsObject:self.dialog]) {
+    if ([dialogs containsObject:self.channel]) {
         
-        NSUInteger index = [dialogs indexOfObject:self.dialog];
-        self.dialog = dialogs[index];
+        NSUInteger index = [dialogs indexOfObject:self.channel];
+        self.channel = dialogs[index];
         [self refreshDataSource];
     }
 }
@@ -64,7 +64,7 @@
     __weak __typeof(self) weakSelf = self;
     
     // Retrieving users from cache.
-    [[[ServicesManager instance].usersService getUsersWithIDs:self.dialog.occupantIDs] continueWithBlock:^id(BFTask *task) {
+    [[[ServicesManager instance].usersService getUsersWithIDs:self.channel.occupantIDs] continueWithBlock:^id(BFTask *task) {
         __typeof(weakSelf)strongSelf = weakSelf;
         
         strongSelf.usersDatasource = [[UsersDataSource alloc] initWithUsers:task.result];
@@ -83,7 +83,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:kGoToAddOccupantsSegueIdentifier]) {
         EditDialogTableViewController *viewController = segue.destinationViewController;
-        viewController.dialog = self.dialog;
+        viewController.channel = self.channel;
     }
 }
 

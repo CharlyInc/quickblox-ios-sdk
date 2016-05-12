@@ -11,6 +11,6 @@
 
 @interface EditDialogTableViewController : UITableViewController
 
-@property (nonatomic, strong) QBChatDialog *dialog;
+@property (nonatomic, strong) QBChatDialog *channel;
 
 @end

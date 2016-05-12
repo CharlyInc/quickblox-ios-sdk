@@ -56,11 +56,11 @@
     [[TWMessageBarManager sharedInstance] showMessageWithTitle:dialogName description:message.text type:TWMessageBarMessageTypeInfo];
 }
 
-- (void)handleErrorResponse:(QBResponse *)response {
-    
+- (void)handleErrorResponse:(QBResponse *)response
+{
     [super handleErrorResponse:response];
     
-	if (![self isAuthorized]){
+	if (![self isAuthorized]) {
 		return;
 	}
 	
@@ -78,8 +78,9 @@
     [[TWMessageBarManager sharedInstance] showMessageWithTitle:NSLocalizedString(@"SA_STR_ERROR", nil) description:errorMessage type:TWMessageBarMessageTypeError];
 }
 
-- (void)downloadCurrentEnvironmentUsersWithSuccessBlock:(void(^)(NSArray *latestUsers))successBlock errorBlock:(void(^)(NSError *error))errorBlock {
-    
+- (void)downloadCurrentEnvironmentUsersWithSuccessBlock:(void(^)(NSArray<QBUUser *> *latestUsers))successBlock
+											 errorBlock:(void(^)(NSError *error))errorBlock
+{
     __weak __typeof(self)weakSelf = self;
     [[self.usersService searchUsersWithTags:@[[self currentEnvironment]]] continueWithBlock:^id(BFTask *task) {
         //
@@ -87,9 +88,8 @@
             if (errorBlock) {
                 errorBlock(task.error);
             }
-        }
-        else {
-            
+
+		} else {
             if (successBlock != nil) {
                 successBlock([weakSelf sortedUsers]);
             }
@@ -99,8 +99,8 @@
     }];
 }
 
-- (NSArray *)sortedUsers {
-    
+- (NSArray *)sortedUsers
+{
     NSArray *users = [self.usersService.usersMemoryStorage unsortedUsers];
     
     NSMutableArray *mutableUsers = [users mutableCopy];
